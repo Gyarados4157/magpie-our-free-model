@@ -51,6 +51,7 @@ lines.once('line', async line => {
       channelBusiness, refresh: settings.refresh !== false, eacCredential: eacSource.credentialOf, eacSetup: eacSource.setup,
       pluginVersion, logger: { info() {}, warn() {}, error() {} } });
     consoleHandoff = await createConsoleHandoff(service, settings.consolePort);
+    await service.ready;
     if (process.stdin.readableEnded) return stop();
     process.stdout.write(JSON.stringify({ type: 'ready', url: service.url,
       keyFile: service.keyFile, pid: process.pid }) + '\n');

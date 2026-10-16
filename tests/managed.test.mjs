@@ -244,7 +244,9 @@ test('real bundled service: console handoff, channels, EAC, requests, key rotati
   let models;
   const provider = { models: {} };
   await t.test('model sync uses real core and channel capabilities, not defaults', async () => {
-    models = await until(async () => { const rows = await plugin.provider.models(provider, { auth }); return rows['buddy/fixture-free'] && rows['mimo-v2.6-flash-free'] ? rows : undefined; });
+    models = await plugin.provider.models(provider, { auth });
+    assert.ok(models['buddy/fixture-free'], 'channel catalog must be ready before the service reports ready');
+    assert.ok(models['mimo-v2.6-flash-free']);
     assert.equal(models['buddy/fixture-free'].capabilities.input.image, true);
     assert.equal(models['buddy/fixture-free'].limit.context, 128000);
     assert.deepEqual(Object.keys(models['mimo-v2.6-flash-free'].variants), ['light', 'balanced', 'deep']);
