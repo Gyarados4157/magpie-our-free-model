@@ -41,6 +41,11 @@ test('upstream runtime hashes match the declared snapshot and Google configurati
     if (/\/web\/channels-[^/]+\.js$/.test(file.path)) {
       assert.match(bytes.toString('utf8'), /t\.setup\?\.message\?\?a\("eac\.noLane"\)/, file.path);
     }
+    if (file.path.endsWith('/web/app.js')) {
+      assert.match(bytes.toString('utf8'), /id:"upgrade",name:"插件升级"/);
+      assert.match(bytes.toString('utf8'), /name:"upgrade",snapshot:y,host:ot/);
+      assert.doesNotMatch(bytes.toString('utf8'), /y&&g==="settings"&&o.jsx\(Hs,\{name:"settings",snapshot:y,host:ot\}\)},g\)/);
+    }
   }
   const business = fs.readFileSync(path.join(dir, 'packages/standalone/channels/business.mjs'), 'utf8');
   for (const name of ['vault-data.js', 'vault-anchor.js']) assert.equal(fs.existsSync(path.join(dir, 'src', name)), false);
