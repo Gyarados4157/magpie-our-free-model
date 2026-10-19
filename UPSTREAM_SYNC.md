@@ -4,6 +4,23 @@ Target repository: `Gyarados4157/magpie-our-free-model`, branch `main`.
 Source: `Ebony-Vinyl/dsh-our-free-model`.
 The source snapshot, not this document, is authoritative: `vendor/ofm/UPSTREAM.json`.
 
+## 0.11.1 - 2026-10-19
+
+Reviewed the changes from `e80c8dd4750fc657164dd25a60deedbc08865b95`
+to `494a1d84e5401b54c4760e9da08f4221824f6d10` (v2.5.4).
+
+Adopted:
+
+- The sponsor page (`src/sponsor.js`, `src/sponsor.css`) and the rebuilt
+  console bundles. The account-channel bundle and the EAC source are unchanged,
+  so their pins move without new digests.
+- The console patch no longer anchors on minified identifiers or asset hashes:
+  every hook is matched by pattern and the upgrade page's dependency index is
+  read from the bundle's own dependency array, so a rebuild cannot silently
+  mis-patch it.
+
+
+
 ## 0.11.0 - 2026-10-19
 
 Reviewed the changes from `e937077fa92d8cc21d3108d5d1e1f32f37e2534e`

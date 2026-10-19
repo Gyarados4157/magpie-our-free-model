@@ -83,7 +83,7 @@ magpie plugin add ./magpie-our-free-model
 
 ### 本次上游同步
 
-0.11.0 同步至上游 `e80c8dd4750fc657164dd25a60deedbc08865b95`（v2.3.0 到 v2.5.3，含 DSH 插件 2.5.3 热修）：
+0.11.1 同步至上游 `494a1d84e5401b54c4760e9da08f4221824f6d10`（v2.5.4）：
 免费车道换成 **v2 客户端指纹**：客户端标识必须是 `opencode/latest/<版本>/cli` 整串，
 会话 id 要与官方客户端的编码一致（时间戳倒序 + 1–63 计数器），工具门禁改为 `read` 与 `shell`
 且要求官方定义逐字相同——旧写法（`bash` 桩工具 + 占位属性）现在直接 403。
@@ -235,7 +235,7 @@ ssh -N -L 18900:127.0.0.1:18900 -L 18901:127.0.0.1:18901 your-user@your-server
 ### 直接使用原仓库渠道包
 
 默认 `managed.autoInstallChannels: true`。首次启动自动下载固定提交
-`e80c8dd4750fc657164dd25a60deedbc08865b95` 的完整 `business.mjs`、contracts、Qoder WASM 与许可文件，
+`494a1d84e5401b54c4760e9da08f4221824f6d10` 的完整 `business.mjs`、contracts、Qoder WASM 与许可文件，
 来源固定为原仓库的 **raw.githubusercontent.com**。完整文件集合通过固定大小和 SHA-256 校验后才会加载，
 保存在专用数据目录的 `runtime/channels-<提交>/`；原文件不做内容改写，类 Unix 系统目录/文件权限为 0700/0600。
 每次启动复核缓存，缓存完整时可离线加载。首次下载失败会明确报错，请检查网络并重启；不会悄悄换用其他登录配置。
@@ -254,7 +254,7 @@ Google 原项目已有的环境变量接口仍属于上游行为，插件不额�
 ### EAC 自动接入
 
 默认 `managed.autoInstallEac: true`。首次启动自动从原项目的 **raw.githubusercontent.com**
-下载固定提交 `e80c8dd4750fc657164dd25a60deedbc08865b95` 的 `src/vault.js`、两份数据依赖及 MIT 许可，
+下载固定提交 `494a1d84e5401b54c4760e9da08f4221824f6d10` 的 `src/vault.js`、两份数据依赖及 MIT 许可，
 按代码中固定的 SHA-256 校验完整文件集合后，保存到本机数据目录的 `runtime/eac-<提交>/`。
 原文件保持原样；类 Unix 系统目录权限为 0700、文件为 0600。每次启动复核缓存，之后可离线复用。
 这些原始来源文件不放进本插件的公开仓库或发布包，解封结果不写入磁盘、日志或网页。
@@ -369,8 +369,8 @@ Windows 运行及 Linux/Windows 上的真实 Cloudflare 通道仍需对应平台
 
 ## 来源、贡献与许可证
 
-原项目运行代码固定于 [`e80c8dd4750fc657164dd25a60deedbc08865b95`](https://github.com/Ebony-Vinyl/dsh-our-free-model/tree/e80c8dd4750fc657164dd25a60deedbc08865b95)（v2.5.3），
-随包保存在 `vendor/ofm/`。96 个保留文件中 85 个保持原始字节；11 个有明确适配改动，
+原项目运行代码固定于 [`494a1d84e5401b54c4760e9da08f4221824f6d10`](https://github.com/Ebony-Vinyl/dsh-our-free-model/tree/494a1d84e5401b54c4760e9da08f4221824f6d10)（v2.5.3），
+随包保存在 `vendor/ofm/`。98 个保留文件中 87 个保持原始字节；11 个有明确适配改动，
 原始 SHA-256、改动摘要和省略清单见 `vendor/ofm/UPSTREAM.json`。
 公开发布包仍省略两个 EAC 加密凭据数据文件，并记录 Magpie 适配：OAuth/App ID 默认值移除、EAC 空实现、渠道 Worker 入口、
 匿名车道客户端标识改写、免费车道会话落盘到独立数据目录，以及独立控制台的插件升级页。

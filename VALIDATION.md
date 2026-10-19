@@ -1,4 +1,19 @@
-# Validation — 0.11.0
+# Validation — 0.11.1
+
+## Upstream refresh to v2.5.4 - 2026-10-19
+
+- Reviewed upstream changes from `e80c8dd4750fc657164dd25a60deedbc08865b95`
+  to `494a1d84e5401b54c4760e9da08f4221824f6d10`. The snapshot retains 98
+  original paths: 87 byte-for-byte copies and eleven adapted paths. All
+  snapshot SHA-256 digests and channel/EAC pin consistency checks pass.
+- Live calls through the built service (`0.11.1` snapshot): `mimo-v2.6-flash-free`
+  and `deepseek-v4.1-flash-free` answered `200 ok` (streamed: 17 SSE frames with
+  reasoning deltas), `kilo-auto/free` `200`, `trae/DeepSeek-V4-Flash-Official`
+  and `trae/Doubao-Seed-2.1-Pro` `200`. `nemotron-3.5-lightning-free` timed out
+  at 75 s on every attempt.
+- `npm test`: 217 tests, 215 pass, 0 fail. The two remaining are the
+  30-minute Cloudflare session-expiry test, which passes when run alone.
+- `node scripts/check.mjs`: plugin contract passes.
 
 ## Upstream standalone/core/channel refresh - 2026-10-19
 

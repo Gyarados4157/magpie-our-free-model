@@ -10,7 +10,7 @@ import { patchEacDiagnostics, patchEacSetupUi } from './ofm-eac-setup-patch.mjs'
 import { patchSessionStore } from './ofm-session-store-patch.mjs';
 import { patchConsoleUpgrade } from './ofm-console-upgrade-patch.mjs';
 
-const pin = 'e80c8dd4750fc657164dd25a60deedbc08865b95';
+const pin = '494a1d84e5401b54c4760e9da08f4221824f6d10';
 const root = path.resolve(process.argv[2] || '');
 if (!process.argv[2]) throw new Error('Usage: node scripts/vendor-ofm.mjs /path/to/upstream');
 if (execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() !== pin) throw new Error(`Expected upstream ${pin}`);

@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/Ebony-Vinyl/dsh-our-free-model",
-  "commit": "e80c8dd4750fc657164dd25a60deedbc08865b95",
+  "commit": "494a1d84e5401b54c4760e9da08f4221824f6d10",
   "files": [
     {
       "path": "LICENSE",
@@ -10,7 +10,7 @@
     {
       "path": "package.json",
       "bytes": 2986,
-      "sha256": "a0a1b5d5f8b51533535d4e67e677098fc80694b5f544a99d6e12a13ca5103cb2"
+      "sha256": "130d55802fad1fb0ee6a1c7a3edfc79567c87cf33cccd89bff8bebdfb3caf6cc"
     },
     {
       "path": "packages/standalone/README.md",
@@ -75,7 +75,7 @@
     {
       "path": "packages/standalone/package.json",
       "bytes": 917,
-      "sha256": "423969a003fb4da9290a0bfbe87bd4c376f6a08bdb60aa4d06b7e76b7f51d47c"
+      "sha256": "41db3cbdcf5ecc90be232a1bd33db7609ca640fd5f15b93bc743689762014183"
     },
     {
       "path": "packages/standalone/service.mjs",
@@ -89,23 +89,23 @@
     },
     {
       "path": "packages/standalone/web/app.css",
-      "bytes": 419427,
-      "sha256": "f3f2b2bfec3b5975188480b764dfb6582e4d7a27720fd6106117611e0b0cc314"
+      "bytes": 428756,
+      "sha256": "ffae89d561fb63199a825f77b4e8fb6e1acd9c220696c4d28ca0c13d35ced471"
     },
     {
       "path": "packages/standalone/web/app.js",
-      "bytes": 263972,
-      "sha256": "8afb1caa7f71b623aca890658876e600afb6ebf12b75ada0e699b367fe9901b7"
+      "bytes": 354186,
+      "sha256": "8de36f62e486a27e5251736f0cf0a04ce3b3366ab7aa0ed73b33533bb8c24b50"
     },
     {
       "path": "packages/standalone/web/assets.json",
       "bytes": 239,
-      "sha256": "ba160e9e343e420e73a88c000eab099b2bccec01b3e6dc8a32af812bf91a162d"
+      "sha256": "40a42c8c03d52aa8b55ff27d4fdb01d0b2df2d81df5ef660b337458a661a400f"
     },
     {
-      "path": "packages/standalone/web/channels-Bo15uddV.js",
-      "bytes": 366058,
-      "sha256": "3d851ed45ec22e9c1d824277966e05ff6e2505e60b200b248ffe4a1a2eba44d6"
+      "path": "packages/standalone/web/channels-Cf_uxhep.js",
+      "bytes": 466316,
+      "sha256": "36a9825c3a79929b7ba174177bedb52d978f97cf7c0e9e80c05f66c88c8aa770"
     },
     {
       "path": "packages/standalone/web/channels-DtR2ayCL.js",
@@ -333,6 +333,16 @@
       "sha256": "9123be50f8284a9a8735abac7c0e541e726fdfdce1de9aab841e4e5bbe348e17"
     },
     {
+      "path": "src/sponsor.css",
+      "bytes": 10528,
+      "sha256": "ce751e456ff4b0ddad7979fa0fc9c6e27f19244c0d9e3912611a8f493d923293"
+    },
+    {
+      "path": "src/sponsor.js",
+      "bytes": 15009,
+      "sha256": "c986e270842448dc798015f717aee73aff7bf580bdbab9ad49feb44a1ec4312f"
+    },
+    {
       "path": "src/store.js",
       "bytes": 24277,
       "sha256": "87cf8f808019f94e021a52b3e06d402b22ccb57e39c1e6a932aea2b0d7be9cfa"
@@ -507,9 +517,9 @@
       "reason": "Expose safe EAC installation diagnostics."
     },
     {
-      "path": "packages/standalone/web/channels-Bo15uddV.js",
-      "originalSha256": "3d851ed45ec22e9c1d824277966e05ff6e2505e60b200b248ffe4a1a2eba44d6",
-      "sha256": "27453bd78ddd90682ad2fa33dbf69f5d26d3d430a5657527a9932b9966290d08",
+      "path": "packages/standalone/web/channels-Cf_uxhep.js",
+      "originalSha256": "36a9825c3a79929b7ba174177bedb52d978f97cf7c0e9e80c05f66c88c8aa770",
+      "sha256": "eabbebb35963cf85b5820c3b3f254664efdc3d0fc9e85b6c7da6bf8c4d72b479",
       "reason": "Display safe EAC installation diagnostics."
     },
     {
@@ -544,14 +554,14 @@
     },
     {
       "path": "packages/standalone/web/app.js",
-      "originalSha256": "8afb1caa7f71b623aca890658876e600afb6ebf12b75ada0e699b367fe9901b7",
-      "sha256": "093d7aa5e80abee35c3bac639b2745356b969959ae605cb6be503cb76149ca5a",
+      "originalSha256": "8de36f62e486a27e5251736f0cf0a04ce3b3366ab7aa0ed73b33533bb8c24b50",
+      "sha256": "4056f6cf2f0e53ed6b4f3ee0c104aa3f24c7b36428874fc0efef8f9bad3ba183",
       "reason": "Expose a Magpie plugin-upgrade page independent of service settings."
     },
     {
       "path": "packages/standalone/web/assets.json",
-      "originalSha256": "ba160e9e343e420e73a88c000eab099b2bccec01b3e6dc8a32af812bf91a162d",
-      "sha256": "56bdb4f0fb6ead8d73c77c04b771664da79a24604e3b07b2f598483c5a03c813",
+      "originalSha256": "40a42c8c03d52aa8b55ff27d4fdb01d0b2df2d81df5ef660b337458a661a400f",
+      "sha256": "c4bd5a095af0496151b3e77d1df4e59cd029964129736ac3d3884c4ee9dd7cfa",
       "reason": "Expose a Magpie plugin-upgrade page independent of service settings."
     }
   ]
