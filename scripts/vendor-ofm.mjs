@@ -10,7 +10,7 @@ import { patchEacDiagnostics, patchEacSetupUi } from './ofm-eac-setup-patch.mjs'
 import { patchSessionStore } from './ofm-session-store-patch.mjs';
 import { patchConsoleUpgrade } from './ofm-console-upgrade-patch.mjs';
 
-const pin = 'e937077fa92d8cc21d3108d5d1e1f32f37e2534e';
+const pin = 'e80c8dd4750fc657164dd25a60deedbc08865b95';
 const root = path.resolve(process.argv[2] || '');
 if (!process.argv[2]) throw new Error('Usage: node scripts/vendor-ofm.mjs /path/to/upstream');
 if (execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() !== pin) throw new Error(`Expected upstream ${pin}`);
@@ -31,7 +31,7 @@ for (const dir of ['src', 'packages/standalone/channels', 'packages/standalone/w
   };
   walk(dir);
 }
-for (const name of ['cli', 'service', 'management', 'login-terminal', 'eac']) files.add(`packages/standalone/${name}.mjs`);
+for (const name of ['cli', 'service', 'management', 'login-terminal', 'eac', 'open-external']) files.add(`packages/standalone/${name}.mjs`);
 const manifest = [];
 for (const name of [...files].sort()) {
   const source = path.join(root, name);

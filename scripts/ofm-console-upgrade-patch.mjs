@@ -31,8 +31,8 @@ export function patchConsoleUpgrade(directory) {
   const assetsFile = 'packages/standalone/web/assets.json';
   let app = fs.readFileSync(path.join(directory, appFile), 'utf8');
   app = replaceOnce(app,
-    '{label:"管理",items:[{id:"settings",name:"服务设置",icon:hy}]}',
-    '{label:"管理",items:[{id:"settings",name:"服务设置",icon:hy},{id:"upgrade",name:"插件升级",icon:hy}]}',
+    '{label:"管理",items:[{id:"settings",name:"服务设置",icon:dy}]}',
+    '{label:"管理",items:[{id:"settings",name:"服务设置",icon:dy},{id:"upgrade",name:"插件升级",icon:dy}]}',
     'nav');
   app = replaceOnce(app,
     'yv=["overview","models","usage","channels","eac","settings","connection"]',
@@ -43,26 +43,22 @@ export function patchConsoleUpgrade(directory) {
     'settings:"服务设置",upgrade:"插件升级",connection:"API 接入"',
     'page titles');
   app = replaceOnce(app,
-    '"settings-Cq1Y-v4k.js"])))=>i.map(i=>d[i]);',
-    '"settings-Cq1Y-v4k.js","upgrade-magpie.js"])))=>i.map(i=>d[i]);',
+    '"settings-DYjyfDI2.js"])))=>i.map(i=>d[i]);',
+    '"settings-DYjyfDI2.js","upgrade-magpie.js"])))=>i.map(i=>d[i]);',
     'asset map');
   app = replaceOnce(app,
-    'c==="models"?()=>import("./models-8lE4ufFd.js"):c==="usage"?()=>import("./usage-SUrY-tWU.js"):()=>import("./settings-Cq1Y-v4k.js"),__vite__mapDeps([7,4])',
-    'c==="models"?()=>import("./models-8lE4ufFd.js"):c==="usage"?()=>import("./usage-SUrY-tWU.js"):c==="upgrade"?()=>import("./upgrade-magpie.js"):()=>import("./settings-Cq1Y-v4k.js"),__vite__mapDeps(c==="upgrade"?[8]:[7,4])',
+    'c==="models"?()=>import("./models-ishsHIe7.js"):c==="usage"?()=>import("./usage-BOibUWax.js"):()=>import("./settings-DYjyfDI2.js"),__vite__mapDeps([7,4])',
+    'c==="models"?()=>import("./models-ishsHIe7.js"):c==="usage"?()=>import("./usage-BOibUWax.js"):c==="upgrade"?()=>import("./upgrade-magpie.js"):()=>import("./settings-DYjyfDI2.js"),__vite__mapDeps(c==="upgrade"?[8]:[7,4])',
     'lazy import');
   app = replaceOnce(app,
     'c==="models"?"Models":c==="usage"?"Usage":"Settings"',
     'c==="models"?"Models":c==="usage"?"Usage":c==="upgrade"?"Upgrade":"Settings"',
     'lazy export');
-  app = replaceOnce(app,
-    'y&&g==="settings"&&o.jsx(Hs,{name:"settings",snapshot:y,host:ot})',
-    'y&&g==="settings"&&o.jsx(Hs,{name:"settings",snapshot:y,host:ot}),y&&g==="upgrade"&&o.jsx(Hs,{name:"upgrade",snapshot:y,host:ot})',
-    'page mount');
   fs.writeFileSync(path.join(directory, appFile), app);
   let assets = fs.readFileSync(path.join(directory, assetsFile), 'utf8');
   assets = replaceOnce(assets,
-    '  "settings-Cq1Y-v4k.js",\n',
-    '  "settings-Cq1Y-v4k.js",\n  "upgrade-magpie.js",\n',
+    '  "settings-DYjyfDI2.js",\n',
+    '  "settings-DYjyfDI2.js",\n  "upgrade-magpie.js",\n',
     'assets manifest');
   fs.writeFileSync(path.join(directory, assetsFile), assets);
   fs.writeFileSync(path.join(directory, UPGRADE_FILE), PAGE);

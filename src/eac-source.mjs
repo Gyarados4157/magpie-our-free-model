@@ -3,11 +3,11 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-export const EAC_COMMIT = 'e937077fa92d8cc21d3108d5d1e1f32f37e2534e';
+export const EAC_COMMIT = 'e80c8dd4750fc657164dd25a60deedbc08865b95';
 // Original standalone entry point and its dependencies, unchanged. The shared
 // gateway material stays in the user's private runtime cache, outside the package.
 export const EAC_FILES = Object.freeze([
-  { path: 'src/vault.js', sha256: '6f9d5dce4af5dc504991af32b46cd3b76dd0c587fcacb35cc6245a518201c021' },
+  { path: 'src/vault.js', sha256: '9ee2cd231f9642883485787832ea82c6411c062ba276e70cc770cff3a464f186' },
   { path: 'src/vault-data.js', sha256: 'c5d33a4607a8834615da00c32daa81899bb73f6096bc0a2b0b74f45ba4232f57' },
   { path: 'src/vault-anchor.js', sha256: '0ac4dfb79cc037af8a0c568eaa067bfac0402ac84030cb3ad709a7feaafae7f6' },
   { path: 'LICENSE', sha256: '4d5f97c83545b2159926df06d3210a266d2b7f900e27f7b3e8e576caf753e828' },

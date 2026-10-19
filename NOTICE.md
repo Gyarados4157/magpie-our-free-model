@@ -5,8 +5,8 @@
 The full account-channel integration, standalone model runtime, EAC authorization,
 statistics and local management UI are from **Ebony-Vinyl/dsh-our-free-model**:
 https://github.com/Ebony-Vinyl/dsh-our-free-model
-Pinned commit: e937077fa92d8cc21d3108d5d1e1f32f37e2534e (2026-10-16).
-90 upstream runtime/asset/license paths are retained under vendor/ofm; 79 are
+Pinned commit: e80c8dd4750fc657164dd25a60deedbc08865b95 (2026-10-19).
+96 upstream runtime/asset/license paths are retained under vendor/ofm; 85 are
 byte-for-byte copies. UPSTREAM.json records original and adapted hashes and the
 two omitted encrypted EAC data files. Eleven adapted paths are documented: removing
 bundled Google OAuth defaults and the Loomy WeChat App ID, replacing vault.js with an empty stub,

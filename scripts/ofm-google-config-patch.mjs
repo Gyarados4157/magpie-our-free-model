@@ -43,11 +43,5 @@ export function externalizeEacCredentials(directory) {
   replace('src/vault.js', '// Magpie distribution: no EAC credential material is shipped.\nexport function openSeal() { return null; }\nexport function unlockSealedLane() { return null; }\n',
     'Replace the packaged vault with an empty stub; original EAC source is installed in a private runtime cache or selected locally.');
   for (const file of ['src/vault-data.js', 'src/vault-anchor.js']) fs.unlinkSync(path.join(directory, file));
-  const serviceFile = 'packages/standalone/service.mjs';
-  const original = fs.readFileSync(path.join(directory, serviceFile), 'utf8');
-  const updated = original.replace('logger = console, refresh = true, probe,', 'logger = console, refresh = true, probe, eacCredential, eacSetup,')
-    .replace('dataDir,\n      onSaved:', 'dataDir, credentialOf: eacCredential, setup: eacSetup,\n      onSaved:');
-  if (updated === original || !updated.includes('credentialOf: eacCredential')) throw new Error('Standalone EAC integration point changed');
-  replace(serviceFile, updated, 'Accept an original EAC credential function and safe setup diagnostics; preserve server authorization and login flow.');
   return adaptations;
 }

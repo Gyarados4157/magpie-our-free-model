@@ -43,8 +43,8 @@ test('upstream runtime hashes match the declared snapshot and Google configurati
     }
     if (file.path.endsWith('/web/app.js')) {
       assert.match(bytes.toString('utf8'), /id:"upgrade",name:"插件升级"/);
-      assert.match(bytes.toString('utf8'), /name:"upgrade",snapshot:y,host:ot/);
-      assert.doesNotMatch(bytes.toString('utf8'), /y&&g==="settings"&&o.jsx\(Hs,\{name:"settings",snapshot:y,host:ot\}\)},g\)/);
+      assert.match(bytes.toString('utf8'), /c==="upgrade"\?\(\)=>import\("\.\/upgrade-magpie\.js"\)/);
+      assert.match(bytes.toString('utf8'), /c==="upgrade"\?"Upgrade"/);
     }
   }
   const business = fs.readFileSync(path.join(dir, 'packages/standalone/channels/business.mjs'), 'utf8');

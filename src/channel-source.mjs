@@ -3,12 +3,12 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-export const CHANNEL_COMMIT = 'e937077fa92d8cc21d3108d5d1e1f32f37e2534e';
+export const CHANNEL_COMMIT = 'e80c8dd4750fc657164dd25a60deedbc08865b95';
 // Load the complete upstream channel bundle unchanged, including native login
 // defaults. Downloaded modules stay outside the public plugin distribution.
 export const CHANNEL_FILES = Object.freeze([
   { path: 'LICENSE', bytes: 1068, sha256: '4d5f97c83545b2159926df06d3210a266d2b7f900e27f7b3e8e576caf753e828' },
-  { path: 'packages/standalone/channels/business.mjs', bytes: 2882152, sha256: 'd7440ac8a45b0e0a408b753b8030314f477fd9d0ad28fe39f8bea7b1d866f20d' },
+  { path: 'packages/standalone/channels/business.mjs', bytes: 2912284, sha256: '39316afc57c75a227c5b38efe2aba8a54529cad1e235b4d1a592f83debb0dfd6' },
   { path: 'packages/standalone/channels/contracts.mjs', bytes: 1598, sha256: '999c203ac49b2d77a4dcff750476f3977615ef208ffc3d4d073caea39c72dd33' },
   { path: 'vendor/channel-pack/LICENSE', bytes: 1060, sha256: '0f62f49c7c75f82fe6d88eebfbdd1b647a89e42ab765ee470d0496af40ec0b25' },
   { path: 'vendor/channel-pack/NOTICE.md', bytes: 3542, sha256: 'a6cad78e702a992511f24863350eef53bda78773c868d933f3dc44dbb5931ab9' },

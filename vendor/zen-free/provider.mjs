@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import {
   PROVIDER,
   SDK,
@@ -9,7 +8,7 @@ import {
 } from "./models.mjs";
 import { collapseResponse } from "./stream.mjs";
 import { guardToolResponse } from "./tool-response.mjs";
-import { mintSessionId, SESSION_RE, applyFingerprint } from "../ofm/src/upstream.js";
+import { CLIENT_UA, applyFingerprint, gatewayHeaders, sessionForConversation } from "../ofm/src/upstream.js";
 import { normalizeResponse } from "../../src/response.mjs";
 
 const DEFAULT_BASE = "https://opencode.ai/inference/v1";
@@ -17,8 +16,8 @@ const CATALOG = "https://models.opencode.ai/api.json";
 const DOCS =
   "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/web/src/content/docs/zen.mdx";
 const PATHS = { chat: "/chat/completions", responses: "/responses", anthropic: "/messages" };
-const CORE_TOOLS = ["bash", "edit", "glob", "grep", "read"];
-const OPENCODE_VERSION = "1.18.34";
+// The v2 gate fingerprints the client on every header upstream.js sends; a
+// second copy of that wire is what made this entry answer 403.
 
 function httpURL(value) {
   const url = new URL(value);
@@ -67,18 +66,20 @@ function normalizeTools(body, protocol) {
   }
   const map = applyFingerprint(body, protocol === "responses" ? true : protocol === "anthropic" ? "claude" : false);
   const injected = new Set();
-  const folded = new Map();
+  const folded = new Map(map);
   for (const [sent, original] of map) {
     if (!declared.has(sent)) injected.add(sent);
-    if (sent !== original) folded.set(sent, original);
+    declared.add(original);
+  }
+  for (const tool of body.tools ?? []) {
+    const name = protocol === "chat" ? tool?.function?.name : tool?.name;
+    if (typeof name === "string" && !declared.has(name) && !map.has(name)) injected.add(name);
   }
   return { declared, injected, folded };
 }
 
-const sessions = new Map();
-
-function sessionID(headers, body) {
-  let signal;
+/** The conversation the caller names, or global when it names none. */
+function sessionSeed(headers, body) {
   for (const name of [
     "x-opencode-session-id",
     "x-opencode-session",
@@ -86,25 +87,15 @@ function sessionID(headers, body) {
     "x-session-id",
     "conversation-id",
   ]) {
-    if (headers.get(name)) {
-      signal = headers.get(name);
-      break;
-    }
+    const value = headers.get(name);
+    if (value) return value;
   }
-  if (!signal && typeof body.metadata?.session_id === "string") signal = body.metadata.session_id;
-  if (!signal) {
-    const messages = body.messages ?? body.input;
-    const first = Array.isArray(messages)
-      ? messages.find((message) => message.role === "user")?.content
-      : messages;
-    signal = first ? JSON.stringify(first) : randomUUID();
-  }
-  if (SESSION_RE.test(signal)) return signal;
-  const remembered = sessions.get(signal);
-  if (remembered) return remembered;
-  const minted = mintSessionId();
-  sessions.set(signal, minted);
-  return minted;
+  if (typeof body.metadata?.session_id === "string") return body.metadata.session_id;
+  const messages = body.messages ?? body.input;
+  const first = Array.isArray(messages)
+    ? messages.find((message) => message.role === "user")?.content
+    : messages;
+  return first ? JSON.stringify(first) : "global";
 }
 
 async function server(_input, options = {}) {
@@ -213,38 +204,20 @@ async function server(_input, options = {}) {
             const toolPolicy = normalizeTools(body, protocol);
             if (protocol === "chat")
               body.stream_options = { ...body.stream_options, include_usage: true };
-            const headers = new Headers(request.headers);
-            for (const name of [
-              "authorization",
-              "x-api-key",
-              "x-goog-api-key",
-              "content-length",
-              "content-encoding",
-              "host",
-              "cookie",
-            ]) {
-              headers.delete(name);
-            }
-            headers.set("content-type", "application/json");
-            headers.set("accept", "text/event-stream");
-            headers.set("user-agent", `opencode/${OPENCODE_VERSION}`);
-            headers.set("x-opencode-client", "cli");
-            headers.set("x-opencode-request", `req_${randomUUID().replaceAll("-", "")}`);
-            if (!headers.has("x-opencode-project")) {
-              const project = _input?.project;
-              headers.set(
-                "x-opencode-project",
-                project?.vcs === "git" && project.id ? project.id : "global",
-              );
-            }
-            const session = sessionID(headers, body);
-            for (const name of ["x-session-id", "x-opencode-session", "x-opencode-session-id", "x-session-affinity"])
-              headers.set(name, session);
+            // One wire, one source: v2 refuses x-opencode-request, demands
+            // both session headers and a versioned client token.
+            const session = sessionForConversation(sessionSeed(request.headers, body));
+            const headers = new Headers(gatewayHeaders({ session, stream: true }));
+            // A caller that names its project keeps it; otherwise the v2 rule:
+            // a git checkout's id, else global.
+            const callerProject = request.headers.get("x-opencode-project");
+            const gitProject = _input?.project?.vcs === "git" ? _input.project.id : undefined;
+            headers.set("x-opencode-project", callerProject ?? gitProject ?? "global");
+            headers.set("user-agent", CLIENT_UA);
             if (protocol === "anthropic") {
+              headers.delete("authorization");
               headers.set("x-api-key", "public");
-              if (!headers.has("anthropic-version")) headers.set("anthropic-version", "2023-06-01");
-            } else {
-              headers.set("authorization", "Bearer public");
+              headers.set("anthropic-version", "2023-06-01");
             }
             const response = await fetch(request.url, {
               method: "POST",

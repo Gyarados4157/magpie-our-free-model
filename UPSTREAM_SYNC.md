@@ -4,6 +4,33 @@ Target repository: `Gyarados4157/magpie-our-free-model`, branch `main`.
 Source: `Ebony-Vinyl/dsh-our-free-model`.
 The source snapshot, not this document, is authoritative: `vendor/ofm/UPSTREAM.json`.
 
+## 0.11.0 - 2026-10-19
+
+Reviewed the changes from `e937077fa92d8cc21d3108d5d1e1f32f37e2534e`
+to `e80c8dd4750fc657164dd25a60deedbc08865b95` (v2.3.0 through v2.5.3).
+
+Adopted:
+
+- The free lane's v2 client fingerprint: a single `opencode/latest/<version>/cli`
+  client token, canonical session encoding, and the `read` + `shell` tool gate
+  with OpenCode's own definitions. The old `bash` stub plus a placeholder
+  property is refused with 403 now.
+- One wire, one source: this plugin and the optional `our-free-zen` entry both
+  send the header set `src/upstream.js` builds, instead of keeping a second copy.
+- Standalone LAN forwarding relay (`lanEnabled`/`lanPort`, `startLanRelay`),
+  plus the channel-pack OpenCode capability, Loomy/MiniMax/iFlytek and loop
+  recovery fixes.
+- `packages/standalone/open-external.mjs` is now part of the snapshot.
+
+Plugin-side:
+
+- The console's page loader became generic, so the plugin-upgrade page is
+  anchored on the new hashed bundle names and the new lazy-import shape.
+- Channel and EAC download pins, sizes and SHA-256 digests updated from the
+  original files.
+
+
+
 ## 0.10.0 - 2026-10-16
 
 Reviewed the changes from `e9c4b70d913116284692d7b206a63f39ad6fe8cc`

@@ -14,7 +14,7 @@
  * @module src/probe.js
  */
 
-import { applyFingerprint, endpointFor, mintRequestId, sessionForConversation, wireFor } from './upstream.js'
+import { applyFingerprint, endpointFor, sessionForConversation, wireFor } from './upstream.js'
 import { CODE, postStreamed } from './http.js'
 import { egressFetch } from './egress.js'
 
@@ -51,7 +51,9 @@ export async function probeModel(model, { attributionUserAgent, signal, timeoutM
   const session = sessionForConversation('probe:our-free-model')
   const wire = wireFor(model.id)
   const body = buildPing(model.id, wire)
-  applyFingerprint(body, wire === 'responses')
+  // 三条线各有自己的工具形状：Responses 是扁平项，Messages 是 Claude 的
+  // `input_schema`，Chat 是 `{function:{…}}`。传错形状会让注入的指纹工具不合规。
+  applyFingerprint(body, wire === 'responses' ? true : wire === 'messages' ? 'claude' : false)
 
   let firstDelta
   let streamError
@@ -60,7 +62,6 @@ export async function probeModel(model, { attributionUserAgent, signal, timeoutM
       path: endpointFor(model.id),
       body,
       session,
-      requestId: mintRequestId(),
       attributionUserAgent,
       signal,
       timeoutMs,

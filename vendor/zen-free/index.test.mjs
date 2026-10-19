@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { once } from "node:events";
 import test from "node:test";
 import { protocols, declaredTools, toolReply } from "./tool-fixtures.mjs";
+import { CLIENT_UA } from "../ofm/src/upstream.js";
 
 const subject = import("./index.mjs").then((module) => ({
   default: { server: module.ZenFreePlugin },
@@ -101,27 +102,26 @@ for (const { protocol, path, model } of protocols) {
             method: "POST",
             body: JSON.stringify({ model, stream, tools }),
           });
-        for (const [upstream, expected] of [
-          ["bash", "Bash"],
-          ["read", "Read"],
-          ["Bash", "Bash"],
-        ]) {
+        // The v2 gate wants `read` and `shell` with OpenCode's own
+        // definitions; the caller's own tool keeps its spelling, and a reply
+        // under a name the caller never declared is refused.
+        {
+          const upstream = "Read";
+          const expected = "Read";
           state.reply = toolReply(protocol, upstream, upstreamSSE);
           const response = await send();
           assert.equal(response.status, 200);
           const text = await response.text();
           assert.match(text, new RegExp(`"name"\\s*:\\s*"${expected}"`));
-          assert.doesNotMatch(text, /"name"\s*:\s*"(?:bash|read)"/);
         }
         const outbound = state.calls.at(-1).body.tools;
         const sent = outbound.map((raw) => (protocol === "chat" ? raw.function : raw));
-        assert.deepEqual(sent.map((tool) => tool.name).sort(), ["bash", "glob", "grep", "read"]);
-        for (const tool of sent.filter((tool) => !["bash", "read"].includes(tool.name))) {
-          assert.match(tool.description, /This tool is currently unavailable and must not be used\./);
-          assert.deepEqual(Object.keys((tool.parameters ?? tool.input_schema).properties), ["input"]);
-        }
-        for (const tool of sent.filter((tool) => ["bash", "read"].includes(tool.name))) {
-          assert.deepEqual(Object.keys((tool.parameters ?? tool.input_schema).properties), ["command"]);
+        const names = sent.map((tool) => tool.name);
+        for (const gate of ["read", "shell"]) assert.ok(names.includes(gate), `${protocol}: ${gate} declared`);
+        for (const gate of ["read", "shell"]) {
+          const tool = sent.find((entry) => entry.name === gate);
+          assert.equal((tool.parameters ?? tool.input_schema).type, "object");
+          assert.ok(Object.keys((tool.parameters ?? tool.input_schema).properties).length > 0);
         }
         state.reply = toolReply(protocol, "edit", upstreamSSE);
         const error = await send();
@@ -167,7 +167,7 @@ for (const [input, supplied, expected] of [
     });
     await response.text();
     assert.equal(state.calls.at(-1).headers["x-opencode-project"], expected);
-    assert.equal(state.calls.at(-1).headers["user-agent"], "opencode/1.18.34");
+    assert.equal(state.calls.at(-1).headers["user-agent"], CLIENT_UA);
   });
 }
 
@@ -286,13 +286,13 @@ test("forces upstream streaming, preserves existing tools and returns the SSE bo
   assert.equal(sent.headers["x-session-affinity"], sent.headers["x-opencode-session"]);
   assert.equal(sent.headers["x-session-id"], sent.headers["x-opencode-session"]);
   assert.equal(sent.headers["x-opencode-session-id"], sent.headers["x-opencode-session"]);
-  assert.ok(sent.headers["x-opencode-request"]);
+  assert.equal(sent.headers["x-opencode-request"], undefined);
   assert.equal(sent.body.stream, true);
   assert.equal(sent.body.stream_options.include_usage, true);
   assert.deepEqual(sent.body.tools[0], bash);
   assert.deepEqual(
     sent.body.tools.map((tool) => tool.function.name).sort(),
-    ["bash", "glob", "grep", "read"],
+    ["bash", "read", "shell"],
   );
 });
 
@@ -328,7 +328,7 @@ for (const [path, model, key] of [
     });
     await response.text();
     const sent = state.calls.at(-1);
-    assert.equal(sent.body.tools[0].name, "bash");
+    assert.equal(sent.body.tools[0].name, "read");
     assert.equal(sent.body.tools[0][key].type, "object");
     if (path === "messages") {
       assert.equal(sent.headers["x-api-key"], "public");

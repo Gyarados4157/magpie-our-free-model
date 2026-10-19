@@ -4,7 +4,7 @@ import path from 'node:path'
 import net from 'node:net'
 import crypto from 'node:crypto'
 import { createModelRuntime, createRuntimeStores } from '../../src/core/runtime.js'
-import { generateKey, startForwardServer } from '../../src/forward.js'
+import { generateKey, rankLanAddresses, startForwardServer, startLanRelay } from '../../src/forward.js'
 import { isLoopbackHost } from '../../src/trust.js'
 import { createManagement } from './management.mjs'
 import { createStandaloneEac } from './eac.mjs'
@@ -107,12 +107,17 @@ async function acquireServiceLock(dataDir) {
 /** 直接创建核心和 HTTP 服务，不加载插件入口、Cordis 或 DSH 凭据。 */
 export async function startStandalone({
   dataDir = resolveStandaloneDataDir(), host = '127.0.0.1', port,
-  logger = console, refresh = true, probe, eacCredential, eacSetup, channelBusiness, pluginVersion,
+  logger = console, refresh = true, probe, lanEnabled, lanPort, eacCredential, eacSetup, channelBusiness, pluginVersion,
+  startRelay = startLanRelay,
 } = {}) {
   if (!isLoopbackHost(host)) throw new TypeError('the standalone service binds a loopback address only')
   if (typeof dataDir !== 'string' || !path.isAbsolute(dataDir)) throw new TypeError('dataDir must be an absolute path')
   if (port !== undefined && (!Number.isInteger(port) || port < 0 || port > 65535)) {
     throw new TypeError('port must be an integer between 0 and 65535')
+  }
+  if (lanEnabled !== undefined && typeof lanEnabled !== 'boolean') throw new TypeError('lanEnabled must be a boolean')
+  if (lanPort !== undefined && (!Number.isInteger(lanPort) || lanPort < 0 || lanPort > 65535)) {
+    throw new TypeError('lanPort must be an integer between 0 and 65535')
   }
   fs.mkdirSync(dataDir, { recursive: true, mode: 0o700 })
   setSessionStoreRoot(dataDir)
@@ -127,6 +132,91 @@ export async function startStandalone({
   let refreshInFlight
   let closing
   let stopped = false
+  let relay
+  let relayTarget
+  let relayRequestedPort
+  let relayError = null
+  let relayChanges = Promise.resolve()
+  const lanState = () => {
+    const value = stores.settings.get()
+    const addresses = rankLanAddresses(os.networkInterfaces())
+    return {
+      enabled: value.standaloneLanEnabled === true,
+      running: relay !== undefined,
+      host: relay?.host ?? '0.0.0.0',
+      requestedPort: value.standaloneLanPort ?? 0,
+      port: relay?.port ?? null,
+      addresses,
+      baseUrls: relay ? addresses.map(address => `http://${address}:${relay.port}/v1`) : [],
+      error: relayError,
+    }
+  }
+  async function closeRelay() {
+    const current = relay
+    const target = relayTarget
+    relay = undefined
+    relayTarget = undefined
+    relayRequestedPort = undefined
+    await Promise.all([current?.close(), target?.close()])
+  }
+  function reconcileRelay() {
+    relayChanges = relayChanges.then(async () => {
+      const value = stores.settings.get()
+      const wantedPort = value.standaloneLanPort ?? 0
+      relayError = null
+      if (stopped || value.enabled === false || value.standaloneLanEnabled !== true) {
+        await closeRelay()
+        return
+      }
+      if (relay && relayRequestedPort === wantedPort) return
+      await closeRelay()
+      try {
+        if (typeof value.standaloneLanKey !== 'string' || value.standaloneLanKey === '' ||
+            value.standaloneLanKey === value.forwardKey) {
+          settingsPersist({ standaloneLanKey: generateKey() })
+        }
+        // The shared relay targets IPv4 loopback. An IPv6 management bind needs
+        // a separate inference-only loopback target, with no management handler.
+        if (listener.server.address().address !== '127.0.0.1') {
+          relayTarget = await startForwardServer({
+            config: () => ({
+              host: '127.0.0.1', port: 0,
+              enabled: !stopped && stores.settings.get().enabled !== false,
+              key: stores.settings.get().forwardKey,
+            }),
+            complete: runtime.complete, modelRows: runtime.publicModelRows,
+          })
+        }
+        const targetPort = relayTarget?.port ?? listener.port
+        const started = await startRelay({
+          config: () => ({
+            enabled: !stopped && stores.settings.get().enabled !== false && stores.settings.get().standaloneLanEnabled === true,
+            host: '0.0.0.0', port: wantedPort, targetPort,
+            lanKey: stores.settings.get().standaloneLanKey,
+            localKey: stores.settings.get().forwardKey,
+          }),
+          log: message => logger.warn?.(`our-free-model standalone LAN: ${message}`),
+        })
+        relay = started
+        relayRequestedPort = wantedPort
+        if (stopped || stores.settings.get().enabled === false || stores.settings.get().standaloneLanEnabled !== true) await closeRelay()
+      } catch (error) {
+        await closeRelay()
+        relayError = `LAN relay could not start (${/^[A-Z0-9_]+$/.test(error.code ?? '') ? error.code : 'START_FAILED'})`
+        logger.warn?.(relayError)
+      }
+    })
+    return relayChanges
+  }
+  function settingsPersist(patch) {
+    const previous = stores.settings.get()
+    stores.settings.update(patch)
+    stores.settings.flush()
+    if (stores.settings.writeFailed) {
+      stores.settings.value = previous
+      throw new Error('could not persist the standalone LAN settings')
+    }
+  }
   try {
     stores = createRuntimeStores({ dataDir, logger })
     const { settings } = stores
@@ -134,11 +224,18 @@ export async function startStandalone({
     const requestedPort = port ?? (Number.isInteger(savedPort) && savedPort >= 0 && savedPort <= 65535 ? savedPort : 18900)
     const existingKey = settings.get().forwardKey
     const key = typeof existingKey === 'string' && existingKey !== '' ? existingKey : generateKey()
-    settings.update({ forwardKey: key, ...probe === undefined ? {} : { standaloneProbe: probe === true } })
+    const savedLanPort = settings.get().standaloneLanPort
+    settings.update({
+      forwardKey: key,
+      standaloneLanEnabled: lanEnabled ?? settings.get().standaloneLanEnabled === true,
+      standaloneLanPort: lanPort ?? (Number.isInteger(savedLanPort) && savedLanPort >= 0 && savedLanPort <= 65535 ? savedLanPort : 0),
+      ...probe === undefined ? {} : { standaloneProbe: probe === true },
+    })
     settings.flush()
     if (settings.writeFailed) throw new Error('could not persist the standalone API key')
     eac = createStandaloneEac({
-      dataDir, credentialOf: eacCredential, setup: eacSetup,
+      dataDir, ...eacCredential ? { credentialOf: eacCredential } : {}, ...eacSetup ? { setup: eacSetup } : {},
+      ...process.env.OFM_TEST_UPSTREAM ? { openExternal: async () => false } : {},
       onSaved: () => { void runtime?.refreshSealedLane().catch(error => logger.warn?.(`EAC 清单刷新失败：${error.message}`)) },
     })
     runtime = createModelRuntime({
@@ -167,9 +264,13 @@ export async function startStandalone({
         baseUrl: `http://${host === '::1' ? '[::1]' : host}:${listener?.port ?? requestedPort}`,
         automaticRefresh: refresh,
         networkMode: process.env.OFM_TEST_UPSTREAM ? 'fixture' : 'live',
-        capabilities: { anonymous: true, kilo: true, eac: true, accountChannels: true, webUi: true },
+        capabilities: { anonymous: true, kilo: true, eac: true, accountChannels: true, webUi: true, lan: true },
+        lan: lanState(),
       }),
-      onSettingsChanged: () => { if (!refreshInFlight) scheduleRefresh() },
+      onSettingsChanged: async () => {
+        if (!refreshInFlight) scheduleRefresh()
+        await reconcileRelay()
+      },
     })
     listener = await startForwardServer({
       config: () => ({ host, port: requestedPort, enabled: settings.get().enabled !== false, key: settings.get().forwardKey }),
@@ -185,6 +286,7 @@ export async function startStandalone({
     management.setPort(listener.port)
     settings.update({ standalonePort: listener.port })
     settings.flush()
+    await reconcileRelay()
 
     function scheduleRefresh() {
       clearTimeout(timer)
@@ -211,6 +313,7 @@ export async function startStandalone({
       port: listener.port,
       keyFile: path.join(dataDir, 'settings.json'),
       runtime, channels, ready,
+      get lan() { return lanState() },
       close() {
         if (closing !== undefined) return closing
         stopped = true
@@ -219,7 +322,10 @@ export async function startStandalone({
         eac.dispose()
         runtime.dispose()
         closing = (async () => {
-          try { await Promise.all([listener.close(), channels.close()]) } finally {
+          try {
+            await relayChanges
+            await Promise.all([closeRelay(), listener.close(), channels.close()])
+          } finally {
             try { stores.dispose() } finally { await releaseLock() }
           }
         })()
@@ -232,6 +338,8 @@ export async function startStandalone({
     management?.dispose()
     eac?.dispose()
     runtime?.dispose()
+    await relayChanges
+    await closeRelay()
     if (listener) await listener.close()
     await channels?.close()
     try { stores?.dispose() } finally { await releaseLock() }

@@ -83,15 +83,18 @@ magpie plugin add ./magpie-our-free-model
 
 ### 本次上游同步
 
-0.10.0 同步至上游 `e937077fa92d8cc21d3108d5d1e1f32f37e2534e`（v2.3.0 及之后的修复）：
-免费车道迁移到 `/inference/v1`，补齐铸造会话 id、`x-opencode-session-id`、工具指纹与客户端归属处理，
-`FreeTierError` 识别为线路锁定；会话映射写入本插件数据目录 `session-map.json`，重启后复用，卸载时清理。
-匿名车道拒绝 `our-free-model-standalone` 这个客户端标识，内置服务改用 `ofm-standalone/<版本>`。
-Windows 与 Linux 自动回收已确认进程退出的陈旧 `service.lock`。
-账号渠道同步 OpenCode 请求协议与工具名大小写规范化。
-独立控制台在服务设置之外增加 **插件升级** 页，展示 Magpie 插件版本与内置 OFM 运行时版本。
-Magpie 没有 DSH 应用内热升级，该页说明用 `git pull` 或替换安装目录更新。
-兼容入口 `our-free-zen` 走同一条免费车道线缆，工具指纹直接复用上游实现。
+0.11.0 同步至上游 `e80c8dd4750fc657164dd25a60deedbc08865b95`（v2.3.0 到 v2.5.3，含 DSH 插件 2.5.3 热修）：
+免费车道换成 **v2 客户端指纹**：客户端标识必须是 `opencode/latest/<版本>/cli` 整串，
+会话 id 要与官方客户端的编码一致（时间戳倒序 + 1–63 计数器），工具门禁改为 `read` 与 `shell`
+且要求官方定义逐字相同——旧写法（`bash` 桩工具 + 占位属性）现在直接 403。
+上游 `src/upstream.js` 自行处理这些细节，插件与兼容入口 `our-free-zen` 都发同一套头，
+不再各自维护一份线缆。
+独立控制台与独立服务新增**局域网转发中继**（消费者用自己的中继密钥调用，凭据不出宿主进程）。
+账号渠道同步 OpenCode 能力协商、Loomy/迷你麦/讯飞适配与循环恢复的修复。
+仓库同时带来 v2.4.0 的推荐项目页与 v2.5.2/2.5.3 的安装、回滚与 Rust 缓存修复。
+
+本插件侧同时修掉两处：独立控制台的页面加载器改成通用实现后，**插件升级**页仍按新锚点接入；
+渠道包与 EAC 来源的固定提交、文件大小与 SHA-256 一起更新。
 
 上游 2.1 的聚合供应商、回退链与 Token 节省模块随核心保留，但当前上游独立控制台没有完整配置入口；
 本版不宣称这些 DSH 设置已迁移到 Magpie。同步范围和后续维护步骤见 `UPSTREAM_SYNC.md`。
@@ -232,7 +235,7 @@ ssh -N -L 18900:127.0.0.1:18900 -L 18901:127.0.0.1:18901 your-user@your-server
 ### 直接使用原仓库渠道包
 
 默认 `managed.autoInstallChannels: true`。首次启动自动下载固定提交
-`e937077fa92d8cc21d3108d5d1e1f32f37e2534e` 的完整 `business.mjs`、contracts、Qoder WASM 与许可文件，
+`e80c8dd4750fc657164dd25a60deedbc08865b95` 的完整 `business.mjs`、contracts、Qoder WASM 与许可文件，
 来源固定为原仓库的 **raw.githubusercontent.com**。完整文件集合通过固定大小和 SHA-256 校验后才会加载，
 保存在专用数据目录的 `runtime/channels-<提交>/`；原文件不做内容改写，类 Unix 系统目录/文件权限为 0700/0600。
 每次启动复核缓存，缓存完整时可离线加载。首次下载失败会明确报错，请检查网络并重启；不会悄悄换用其他登录配置。
@@ -251,7 +254,7 @@ Google 原项目已有的环境变量接口仍属于上游行为，插件不额�
 ### EAC 自动接入
 
 默认 `managed.autoInstallEac: true`。首次启动自动从原项目的 **raw.githubusercontent.com**
-下载固定提交 `e937077fa92d8cc21d3108d5d1e1f32f37e2534e` 的 `src/vault.js`、两份数据依赖及 MIT 许可，
+下载固定提交 `e80c8dd4750fc657164dd25a60deedbc08865b95` 的 `src/vault.js`、两份数据依赖及 MIT 许可，
 按代码中固定的 SHA-256 校验完整文件集合后，保存到本机数据目录的 `runtime/eac-<提交>/`。
 原文件保持原样；类 Unix 系统目录权限为 0700、文件为 0600。每次启动复核缓存，之后可离线复用。
 这些原始来源文件不放进本插件的公开仓库或发布包，解封结果不写入磁盘、日志或网页。
@@ -366,8 +369,8 @@ Windows 运行及 Linux/Windows 上的真实 Cloudflare 通道仍需对应平台
 
 ## 来源、贡献与许可证
 
-原项目运行代码固定于 [`e937077fa92d8cc21d3108d5d1e1f32f37e2534e`](https://github.com/Ebony-Vinyl/dsh-our-free-model/tree/e937077fa92d8cc21d3108d5d1e1f32f37e2534e)（v2.3.0 及之后的修复），
-随包保存在 `vendor/ofm/`。90 个保留文件中 79 个保持原始字节；11 个有明确适配改动，
+原项目运行代码固定于 [`e80c8dd4750fc657164dd25a60deedbc08865b95`](https://github.com/Ebony-Vinyl/dsh-our-free-model/tree/e80c8dd4750fc657164dd25a60deedbc08865b95)（v2.5.3），
+随包保存在 `vendor/ofm/`。96 个保留文件中 85 个保持原始字节；11 个有明确适配改动，
 原始 SHA-256、改动摘要和省略清单见 `vendor/ofm/UPSTREAM.json`。
 公开发布包仍省略两个 EAC 加密凭据数据文件，并记录 Magpie 适配：OAuth/App ID 默认值移除、EAC 空实现、渠道 Worker 入口、
 匿名车道客户端标识改写、免费车道会话落盘到独立数据目录，以及独立控制台的插件升级页。

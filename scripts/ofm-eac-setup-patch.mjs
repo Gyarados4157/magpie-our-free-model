@@ -1,7 +1,7 @@
 // Reproducible diagnostics patch; OAuth, signatures and authorization are unchanged.
 export function patchEacDiagnostics(source) {
   const pairs = [
-    ['fetch = directFetch })', 'fetch = directFetch, setup })'],
+    ['fetch = directFetch, openExternal = openSystemBrowser })', 'fetch = directFetch, openExternal = openSystemBrowser, setup })'],
     ["authorized: lane?.mode === 'direct', login: '' }", "authorized: lane?.mode === 'direct', login: '', ...setup ? { setup } : {} }"],
     ['savedAt: user?.savedAt ?? 0 }', 'savedAt: user?.savedAt ?? 0, ...setup ? { setup } : {} }'],
   ];

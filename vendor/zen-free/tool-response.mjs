@@ -42,7 +42,7 @@ function nameGuard(policy) {
   return (name) => {
     if (typeof name !== "string" || !name) throw new GuardError("Missing upstream tool name");
     if (declared.has(name)) return name;
-    const restored = injected.has(name) && folded.get(name);
+    const restored = folded.get(name);
     if (restored) return restored;
     const match = injected.has(name) && declaredFolded.get(name.toLowerCase());
     if (match) return match;
